@@ -1,0 +1,99 @@
+---
+# ==============================
+# Mise à jour du cache
+# ==============================
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+# ==============================
+# Installation des paquets sécurité
+# ==============================
+- name: Install security packages
+  apt:
+    name:
+      - fail2ban
+      - ufw
+    state: present
+
+# ==============================
+# Configuration UFW
+# ==============================
+
+# Autoriser SSH AVANT activation
+- name: Allow SSH
+  ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+
+# (Optionnel) Autoriser HTTP/HTTPS si reverse proxy
+- name: Allow HTTP
+  ufw:
+    rule: allow
+    port: 80
+    proto: tcp
+  when: inventory_hostname in groups['haproxy']
+
+- name: Allow HTTPS
+  ufw:
+    rule: allow
+    port: 443
+    proto: tcp
+  when: inventory_hostname in groups['haproxy']
+
+- name: Allow app port from HAProxy servers
+  ufw:
+    rule: allow
+    port: 5000
+    proto: tcp
+    from_ip: "{{ hostvars[item]['ansible_host'] }}"
+  loop: "{{ groups['haproxy'] }}"
+  when: inventory_hostname in groups['web']
+
+- name: Allow PostgreSQL from web servers
+  ufw:
+    rule: allow
+    port: 5432
+    proto: tcp
+    from_ip: "{{ hostvars[item]['ansible_host'] }}"
+  loop: "{{ groups['web'] }}"
+  when: inventory_hostname in groups['db']
+
+
+
+# Activer UFW
+- name: Enable UFW with default deny
+  ufw:
+    state: enabled
+    policy: deny
+
+# ==============================
+# Configuration Fail2Ban
+# ==============================
+- name: Create jail.local
+  copy:
+    dest: /etc/fail2ban/jail.local
+    content: |
+      [DEFAULT]
+      bantime = 10m
+      findtime = 10m
+      maxretry = 5
+      backend = systemd
+
+      [sshd]
+      enabled = true
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Fail2Ban
+
+# ==============================
+# Activation Fail2Ban
+# ==============================
+- name: Ensure Fail2Ban is running
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes

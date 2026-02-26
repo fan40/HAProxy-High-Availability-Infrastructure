@@ -1,0 +1,13 @@
+---
+# Mise à jour du cache apt
+- name: Update apt cache
+  apt:
+    update_cache: yes
+# Installation cron, borgbackup
+- name: Install cron, borgbackup
+  apt:
+    name:
+      - cron
+      - borgbackup
+      - postgresql-client
+    state: present 

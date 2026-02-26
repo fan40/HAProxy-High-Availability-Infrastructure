@@ -1,0 +1,43 @@
+---
+# ------------------------------------------------------------
+# Role : certbot
+# Description : Installation Certbot + SSL Let's Encrypt (Nginx)
+# Compatible : Debian 12
+# ------------------------------------------------------------
+
+# 1️⃣ Mise à jour du cache apt
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+# 2️⃣ Installation Certbot + plugin Nginx
+- name: Install Certbot and Nginx plugin
+  apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+
+# 3️⃣ Génération certificat SSL #le script a resté ici
+- name: Obtain Let's Encrypt certificate
+  command: >
+    certbot --nginx
+    -d {{ certbot_domain }}
+    -d {{ certbot_www_domain }}
+    --non-interactive
+    --agree-tos
+    --email {{ certbot_email }}
+    --redirect
+  args:
+    creates: "/etc/letsencrypt/live/{{ certbot_domain }}/fullchain.pem"
+
+# 4️⃣ Vérifier que le timer systemd est actif
+- name: Check certbot timer
+  command: systemctl is-enabled certbot.timer
+  register: certbot_timer_status
+  changed_when: false
+  failed_when: false
+
+- name: Debug certbot timer status
+  debug:
+    msg: "Certbot timer status: {{ certbot_timer_status.stdout }}"

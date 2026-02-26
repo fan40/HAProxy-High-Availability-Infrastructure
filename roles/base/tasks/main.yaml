@@ -1,0 +1,24 @@
+---
+- name: Mise à jour du cache APT
+  apt:
+    update_cache: yes
+
+- name: Upgrade système
+  apt:
+    upgrade: dist
+
+- name: Installer outils de base
+  apt:
+    name:
+      - git
+      - curl
+      - wget
+      - unzip
+      - cron
+      - gzip
+      - ssh
+      - htop
+      - tar
+      - rsync
+      - net-tools
+    state: present

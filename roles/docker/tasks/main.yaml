@@ -1,0 +1,60 @@
+--- 
+
+# 1️⃣ Mise à jour du cache apt
+- name: Update apt cache
+  apt:
+    update_cache: yes
+# Installation dépendance nécessaires
+- name: Installer les dépendances nécessaires
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+    update_cache: yes
+# Ajout clé GPG officielle de docker
+- name: Ajouter la clé GPG officielle de Docker
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+
+# Ajout dépôt officiel docker
+
+- name: Ajouter le dépôt officiel Docker
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_lsb.codename }} stable"
+    state: present
+
+# Maj paquets
+- name: Mettre à jour la liste des paquets
+  apt:
+    update_cache: yes
+
+# Installation docker et ses composants
+- name: Installer Docker et ses composants
+  apt:
+    name: "{{ docker_packages }}"
+    state: present
+# Demarrer et activer le service docker
+- name: Démarrer et activer le service Docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+# Ajouter l'utilisateur admin au groupe docker
+- name: Ajouter l'utilisateur admin au groupe docker
+  user:
+    name: admin
+    groups: docker
+    append: yes
+
+# érifier la version de Docker
+- name: Vérifier la version de Docker
+  command: docker --version
+  register: docker_version
+  changed_when: false
+# debug
+- debug:
+    msg: "Docker installé : {{ docker_version.stdout }}"

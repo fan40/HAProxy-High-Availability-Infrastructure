@@ -1,0 +1,24 @@
+---
+# ------------------------------------------------------------
+# Role : haproxy
+# Description : Installation HAProxy et activation du service
+# Compatible : Debian 12
+# ------------------------------------------------------------
+
+# 1️⃣ Mise à jour du cache apt
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+# 2️⃣ Installer HAProxy
+- name: Install HAProxy
+  apt:
+    name: haproxy
+    state: present
+
+# 3️⃣ Activer HAProxy au démarrage et démarrer le service
+- name: Ensure HAProxy is started and enabled
+  systemd:
+    name: haproxy
+    state: started
+    enabled: yes

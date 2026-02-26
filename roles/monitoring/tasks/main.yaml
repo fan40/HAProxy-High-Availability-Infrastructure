@@ -1,0 +1,33 @@
+- name: Installer wget si nécessaire
+  apt:
+    name: wget
+    state: present
+    update_cache: yes
+
+- name: Télécharger le dépôt Zabbix
+  get_url:
+    url: "https://repo.zabbix.com/zabbix/7.4/release/debian/pool/main/z/zabbix-release/zabbix-release_latest_7.4+debian10_all.deb"
+    dest: /tmp/zabbix-release.deb
+
+- name: Installer le paquet Zabbix release depuis le fichier .deb
+  apt:
+    deb: /tmp/zabbix-release.deb
+    state: present
+    update_cache: yes
+
+- name: Installer Zabbix Agent
+  apt:
+    name: zabbix-agent
+    state: present
+
+- name: Assurer que le service Zabbix Agent est démarré et activé
+  systemd:
+    name: zabbix-agent
+    state: started
+    enabled: yes
+
+- name: Ouvrir le port Zabbix Agent dans UFW
+  community.general.ufw:
+    rule: allow
+    port: 10050
+    proto: tcp

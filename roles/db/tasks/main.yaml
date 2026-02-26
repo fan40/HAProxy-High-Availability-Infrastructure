@@ -1,0 +1,54 @@
+---
+# ------------------------------------------------------------
+# Role : db
+# Description : Installation PostgreSQL depuis dépôt officiel PGDG
+# Compatible : Debian 12
+# ------------------------------------------------------------
+
+# 1️⃣ Installer dépendances
+- name: Install required packages
+  apt:
+    name:
+      - curl
+      - ca-certificates
+    state: present
+    update_cache: yes
+
+# 2️⃣ Créer dossier pour clé PGDG
+- name: Create PostgreSQL key directory
+  file:
+    path: /usr/share/postgresql-common/pgdg
+    state: directory
+    mode: '0755'
+
+# 3️⃣ Télécharger clé officielle PostgreSQL
+- name: Download PostgreSQL signing key
+  get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+    mode: '0644'
+
+# 4️⃣ Ajouter dépôt PGDG
+- name: Add PostgreSQL PGDG repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt {{ ansible_lsb.codename }}-pgdg main"
+    filename: pgdg
+    state: present
+
+# 5️⃣ Mettre à jour cache apt
+- name: Update apt cache after adding PGDG
+  apt:
+    update_cache: yes
+
+# 6️⃣ Installer PostgreSQL version spécifique
+- name: Install PostgreSQL
+  apt:
+    name: "postgresql-{{ postgres_version }}"
+    state: present
+
+# 7️⃣ Démarrer et activer PostgreSQL
+- name: Ensure PostgreSQL is started and enabled
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
