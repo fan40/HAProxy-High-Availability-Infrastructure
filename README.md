@@ -108,10 +108,10 @@ Normal Operation
 
 Both servers active behind HAProxy.
 
-Simulated Web Server Failure
+## 🚨 Simulated Web Server Failure
 
-✔️ HAProxy automatically removes failed server from backend pool.
-✔️ Traffic continues on remaining healthy server.
+✔️ HAProxy automatically removes failed server from backend pool.  
+✔️ Traffic continues on remaining healthy server.  
 ✔️ No downtime observed.
 
 ![Monitoring](images/simulation_panne_web.png)
