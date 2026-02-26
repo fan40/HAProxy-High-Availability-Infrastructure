@@ -143,7 +143,10 @@ HTTPS redirection
 Secure communication
 
 🤖 Full Automation with Ansible
-Project Structure
+
+📁 Project Structure
+
+```bash
 .
 ├── config/
 ├── images/
